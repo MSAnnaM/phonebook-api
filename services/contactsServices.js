@@ -1,13 +1,9 @@
-import fs from "fs/promises";
-import path from "path";
-
-const pathToFile = path.join("db", "contacts.json");
+import Contact from "../db/models/contactModel.js";
 
 
 export async function listContacts() {
   try {
-    const data = await fs.readFile(pathToFile, "utf-8");
-    const contactsList = JSON.parse(data);
+    const contactsList = await Contact.find();
     return contactsList;
   } catch (error) {
     console.error(error.message);
@@ -16,10 +12,8 @@ export async function listContacts() {
 
 export async function getContactById(contactId) {
   try {
-    const data = await fs.readFile(pathToFile, "utf-8");
-    const contacts = JSON.parse(data);
-    const contactById = contacts.find((contact) => contact.id === contactId);
-    return contactById || null;
+    const result = await Contact.findById(contactId);
+    return result;
   } catch (error) {
     console.error(error.message);
   }
@@ -27,60 +21,25 @@ export async function getContactById(contactId) {
 
 export async function removeContact(contactId) {
   try {
-    const data = await fs.readFile(pathToFile, "utf-8");
-    const contacts = JSON.parse(data);
-    const index = contacts.findIndex((contact) => contact.id === contactId);
-    if (index !== -1) {
-      const remove = contacts.splice(index, 1)[0];
-      await fs.writeFile(
-        pathToFile,
-        JSON.stringify(contacts, null, 2),
-        "utf-8"
-      );
-      return remove;
-    }
-    return null;
+    const result = await Contact.findByIdAndDelete(contactId);
+    return result;
   } catch (error) {
     console.error(error.message);
   }
 }
 
-export async function addContact({name, email, phone}) {
+export async function addContact(data) {
   try {
-    const data = await fs.readFile(pathToFile, "utf-8");
-    const contacts = JSON.parse(data);
-    const newContact = {
-      id: new Date().getTime().toString(16),
-      name,
-      email,
-      phone,
-      };
-      contacts.push(newContact);
-      await fs.writeFile(
-        pathToFile,
-        JSON.stringify(contacts, null, 2),
-        "utf-8"
-      );
-      return newContact;
+    const newContact = Contact.create(data);
+    return newContact;
   } catch (error) {
     console.error(error.message);
   }
 }
 export async function editContact(id, data) {
   try {
-    const listContacts = await fs.readFile(pathToFile, "utf-8");
-    const contacts = JSON.parse(listContacts);
-    const index = contacts.findIndex((contact) => contact.id === id);
-    if (index === -1) {
-      return null;
-    }
-    contacts[index] = { ...contacts[index], ...data }
-    await fs.writeFile(
-        pathToFile,
-        JSON.stringify(contacts, null, 2),
-        "utf-8"
-    );
-    return contacts[index];
+    const result = await Contact.findByIdAndUpdate(id, data, {new: true});
+    return result;
 
   } catch (error) {
     console.error(error.message);
