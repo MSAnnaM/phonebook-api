@@ -1,9 +1,11 @@
 import Contact from "../db/models/contactModel.js";
 
-
-export async function listContacts() {
+export async function listContacts(page, limit, isFavorite) {
   try {
-    const contactsList = await Contact.find();
+    const skip = (page - 1) * limit;
+    const query = isFavorite ? { favorite: true } : {};
+
+    const contactsList = Contact.find(query).skip(skip).limit(limit);
     return contactsList;
   } catch (error) {
     console.error(error.message);
@@ -38,9 +40,8 @@ export async function addContact(data) {
 }
 export async function editContact(id, data) {
   try {
-    const result = await Contact.findByIdAndUpdate(id, data, {new: true});
+    const result = await Contact.findByIdAndUpdate(id, data, { new: true });
     return result;
-
   } catch (error) {
     console.error(error.message);
   }

@@ -63,7 +63,7 @@ export const userLogout = async (req, res, next) => {
     user.token = "";
     await user.save();
 
-    return res.status(204).end();
+    res.status(204).end();
   } catch (er) {
     next(er);
   }
@@ -73,6 +73,23 @@ export const currentUser = async (req, res) => {
   try {
     const { email, subscription } = req.user;
     res.json({ email, subscription });
+  } catch (er) {
+    console.error(er);
+  }
+};
+
+export const userUpdateSubscription = async (req, res) => {
+  const { subscription } = req.body;
+  const { id } = req.user;
+
+  try {
+    const updateUser = await User.findByIdAndUpdate(
+      id,
+      { subscription },
+      { new: true }
+    );
+
+    res.json(updateUser);
   } catch (er) {
     console.error(er);
   }
