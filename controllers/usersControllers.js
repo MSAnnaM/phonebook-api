@@ -20,7 +20,12 @@ export const userSignup = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = { email, password: hashedPassword };
     const newUser = await userRegistration(user);
-    res.status(201).json(newUser);
+    res.status(201).json({
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
+  });
   } catch (er) {
     next(er);
   }
@@ -46,7 +51,13 @@ export const userSignIn = async (req, res, next) => {
 
     const user = await userLogin(existingUser);
     user.password = undefined;
-    res.json(user);
+    res.json({
+    token: user.token,
+    user: {
+      email: user.email,
+      subscription: user.subscription,
+    },
+  });
   } catch (er) {
     next(er);
   }
