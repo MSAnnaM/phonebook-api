@@ -6,9 +6,11 @@ import {
   userSignIn,
   userLogout,
   currentUser,
-  userUpdateSubscription
+  userUpdateSubscription,
+  addAvatar
 } from "../controllers/usersControllers.js";
 import { verifyToken } from "../midellwares/checkToken.js";
+import upload from "../midellwares/upload.js";
 
 const userRouter = express.Router();
 
@@ -17,5 +19,6 @@ userRouter.post("/login", validateBody(userRegistrationSchema), userSignIn);
 userRouter.post("/logout", verifyToken, userLogout);
 userRouter.get("/current", verifyToken, currentUser);
 userRouter.patch("/", verifyToken, validateBody(userUpdateSubscriptionSchema), userUpdateSubscription)
+userRouter.patch("/avatars", verifyToken, upload.single("avatar"), addAvatar )
 
 export default userRouter;

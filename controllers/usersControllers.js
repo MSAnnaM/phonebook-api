@@ -7,6 +7,10 @@ import {
 } from "../services/usersServices.js";
 import HttpError from "../helpers/HttpError.js";
 import User from "../db/models/userModel.js";
+import fs from "fs/promises";
+import path from "path";
+import gravatar from "gravatar";
+import Jimp from "jimp";
 
 export const userSignup = async (req, res, next) => {
   try {
@@ -18,14 +22,15 @@ export const userSignup = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { email, password: hashedPassword };
+    const avatarURL = gravatar.url(email);
+    const user = { email, password: hashedPassword, avatarURL };
     const newUser = await userRegistration(user);
     res.status(201).json({
-    user: {
-      email: newUser.email,
-      subscription: newUser.subscription,
-    },
-  });
+      user: {
+        email: newUser.email,
+        subscription: newUser.subscription,
+      },
+    });
   } catch (er) {
     next(er);
   }
@@ -52,12 +57,12 @@ export const userSignIn = async (req, res, next) => {
     const user = await userLogin(existingUser);
     user.password = undefined;
     res.json({
-    token: user.token,
-    user: {
-      email: user.email,
-      subscription: user.subscription,
-    },
-  });
+      token: user.token,
+      user: {
+        email: user.email,
+        subscription: user.subscription,
+      },
+    });
   } catch (er) {
     next(er);
   }
@@ -103,5 +108,33 @@ export const userUpdateSubscription = async (req, res) => {
     res.json(updateUser);
   } catch (er) {
     console.error(er);
+  }
+};
+
+export const addAvatar = async (req, res, next) => {
+  try {
+    const avatarsDir = path.resolve("public", "avatars");
+    const { id } = req.user;
+
+    if (!req.file) {
+      throw HttpError(400, "No image...Upload file");
+    }
+
+    const { path: tempUpload, originalname } = req.file;
+    const fileName = `${id}_${originalname}`;
+    const resultUpload = path.join(avatarsDir, fileName);
+    await fs.rename(tempUpload, resultUpload);
+    const avatarURL = path.join("avatars", fileName);
+
+    await Jimp.read(resultUpload).then((image) =>
+      image.resize(250, 250).writeAsync(avatarURL)
+    );
+
+    
+    await User.findByIdAndUpdate(id, { avatarURL });
+
+    res.json({ avatarURL });
+  } catch (er) {
+    next(er);
   }
 };
