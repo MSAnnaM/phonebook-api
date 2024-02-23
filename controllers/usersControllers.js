@@ -126,11 +126,9 @@ export const addAvatar = async (req, res, next) => {
     await fs.rename(tempUpload, resultUpload);
     const avatarURL = path.join("avatars", fileName);
 
-    await Jimp.read(resultUpload).then((image) =>
-      image.resize(250, 250).writeAsync(avatarURL)
-    );
+    const image = await Jimp.read(resultUpload);
+    await image.resize(250, 250).writeAsync(resultUpload);
 
-    
     await User.findByIdAndUpdate(id, { avatarURL });
 
     res.json({ avatarURL });
