@@ -21,7 +21,7 @@ const { BASE_URL } = process.env;
 
 export const userSignup = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const {name, email, password } = req.body;
     const existingUser = await getUserByEmail(email);
 
     if (existingUser) {
@@ -30,25 +30,29 @@ export const userSignup = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
-    const verificationToken = nanoid();
+    // const verificationToken = nanoid();
     const user = {
+      name,
       email,
       password: hashedPassword,
       avatarURL,
-      verificationToken,
+      // token,
+      // verificationToken,
     };
     const newUser = await userRegistration(user);
 
-    const verifyEmail = {
-      to: email,
-      subject: "Verify your email",
-      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}" >Click here to verify email</a>`,
-    };
+    // const verifyEmail = {
+    //   to: email,
+    //   subject: "Verify your email",
+    //   html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}" >Click here to verify email</a>`,
+    // };
 
-    await sendEmail(verifyEmail);
+    // await sendEmail(verifyEmail);
 
     res.status(201).json({
+      token: newUser.token,
       user: {
+        name: newUser.name,
         email: newUser.email,
         subscription: newUser.subscription,
       },
@@ -67,9 +71,9 @@ export const userSignIn = async (req, res, next) => {
       throw HttpError(401, "Email or password is wrong");
     }
 
-    if (!existingUser.verify) {
-      throw HttpError(401, "Email not verified");
-    }
+    // if (!existingUser.verify) {
+    //   throw HttpError(401, "Email not verified");
+    // }
 
     const isPasswordValid = await bcrypt.compare(
       password,
@@ -85,6 +89,7 @@ export const userSignIn = async (req, res, next) => {
     res.json({
       token: user.token,
       user: {
+        name: user.name,
         email: user.email,
         subscription: user.subscription,
       },

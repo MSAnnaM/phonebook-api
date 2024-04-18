@@ -4,7 +4,10 @@ import { signupToken } from '../helpers/token.js';
 export async function userRegistration(data) {
     try {
         const newUser = await User.create(data);
-        return newUser;
+        const { id } = newUser;
+        const token = signupToken(id);
+        const result = await User.findByIdAndUpdate(id, { $set: { token } }, { new: true });
+        return result;
     }
     catch (error) {
         console.error(error.message)

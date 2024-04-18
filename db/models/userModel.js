@@ -2,6 +2,9 @@ import { Schema, model } from "mongoose";
 
 const userSchema = new Schema(
   {
+    name: {
+      type: String,
+    },
     password: {
       type: String,
       required: [true, "Set password for user"],
@@ -19,14 +22,14 @@ const userSchema = new Schema(
     token: String,
     avatarURL: String,
 
-    verificationToken: {
-      type: String,
-      required: [true, "Verify token is required"],
-    },
-    verify: {
-      type: Boolean,
-      default: false,
-    },
+    // verificationToken: {
+    //   type: String,
+    //   required: [true, "Verify token is required"],
+    // },
+    // verify: {
+    //   type: Boolean,
+    //   default: false,
+    // },
   },
   {
     versionKey: false,
